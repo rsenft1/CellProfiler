@@ -722,7 +722,7 @@ desired.
 
         returns False if analysis can't be done
         """
-        maximum_image_sets = 500
+        maximum_image_sets = 5000000
         if workspace.measurements.image_set_count > maximum_image_sets:
             msg = (
                 f"You are using ExportToSpreadsheet to export {workspace.measurements.image_set_count} image sets. "
