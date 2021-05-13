@@ -106,6 +106,7 @@ References
 
 import mahotas.features
 import numpy
+import dask
 import skimage.exposure
 import skimage.measure
 import skimage.util
@@ -447,6 +448,8 @@ measured and will result in a undefined value in the output file.
         return columns
 
     def run(self, workspace):
+        import datetime
+        print(datetime.datetime.ctime(datetime.datetime.now()))
         workspace.display_data.col_labels = [
             "Image",
             "Object",
@@ -469,7 +472,7 @@ measured and will result in a undefined value in the output file.
                         statistics += self.run_one(
                             image_name, object_name, scale, workspace
                         )
-
+        print(datetime.datetime.ctime(datetime.datetime.now()))
         if self.show_window:
             workspace.display_data.statistics = statistics
 
@@ -488,6 +491,8 @@ measured and will result in a undefined value in the output file.
         )
 
     def run_one(self, image_name, object_name, scale, workspace):
+        usedask = False
+        print("using dask is",True)
         statistics = []
 
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
@@ -547,14 +552,22 @@ measured and will result in a undefined value in the output file.
 
         features = numpy.empty((n_directions, 13, len(unique_labels)))
 
-        for index, prop in enumerate(props):
-            label_data = prop["intensity_image"]
-            try:
-                features[:, :, index] = mahotas.features.haralick(
-                    label_data, distance=scale, ignore_zeros=True
-                )
-            except ValueError:
-                features[:, :, index] = numpy.nan
+        if usedask:
+            per_label = [self.run_mahotas(prop, scale, n_directions) for prop in props]
+            features = dask.compute(per_label, scheduler='threads')
+            features = numpy.array(features)[0].transpose(1,2,0)
+
+        else:
+            features = numpy.empty((n_directions, 13, len(unique_labels)))
+
+            for index, prop in enumerate(props):
+                label_data = prop['intensity_image']
+                try:
+                    features[:, :, index] = mahotas.features.haralick(
+                        label_data, distance=scale, ignore_zeros=True
+                    )
+                except ValueError:
+                    features[:, :, index] = numpy.nan
 
         for direction, direction_features in enumerate(features):
             for feature_name, feature in zip(F_HARALICK, direction_features):
@@ -567,7 +580,6 @@ measured and will result in a undefined value in the output file.
                     workspace=workspace,
                     gray_levels="{:d}".format(gray_levels),
                 )
-
         return statistics
 
     def run_image(self, image_name, scale, workspace):
@@ -600,6 +612,18 @@ measured and will result in a undefined value in the output file.
 
         return statistics
 
+
+    @dask.delayed
+    def run_mahotas(self, prop, scale, n_directions):
+        label_data = prop['intensity_image']
+
+        try:
+            return mahotas.features.haralick(
+                label_data,
+                distance=scale,
+                ignore_zeros=True)
+        except ValueError:
+            return numpy.full([n_directions,13],numpy.nan)
     def record_measurement(
         self, workspace, image, obj, scale, feature, result, gray_levels
     ):
