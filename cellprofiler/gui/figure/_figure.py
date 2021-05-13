@@ -1569,7 +1569,8 @@ class Figure(wx.Frame):
 
         if clear:
             self.clear_subplot(x, y)
-
+        image = image.persist()
+        image = image.compute()
         # Store the raw image keyed by it's subplot location
         self.images[(x, y)] = image
 
