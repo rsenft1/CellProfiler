@@ -253,6 +253,7 @@ class Figure(wx.Frame):
         self.MenuBar.Append(make_help_menu(figure_help, self), "&Help")
 
     def create_toolbar(self):
+        return
         self.navtoolbar = NavigationToolbar(self.figure.canvas, want_measure=True)
         self.navtoolbar.Bind(EVT_NAV_MODE_CHANGE, self.on_navtool_changed)
 
