@@ -48,6 +48,5 @@ NAV_MODE_NONE = ""
 NAV_MODE_PAN = "pan/zoom"
 NAV_MODE_ZOOM = "zoom rect"
 NAV_MODE_MEASURE = "measure"
-BMP_MEASURE = get_builtin_image("IMG_MEASURE")
-#BMP_MEASURE = wx.Bitmap(get_builtin_image("IMG_MEASURE"))
+BMP_MEASURE = wx.Bitmap(get_builtin_image("IMG_MEASURE"))
 WINDOW_IDS = []
