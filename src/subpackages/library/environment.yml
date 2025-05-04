@@ -1,0 +1,12 @@
+# run: conda env create
+name: library-dev
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - scikit-image
+  - scipy
+  - matplotlib
+  - mahotas
+  - pip:
+    - centrosome
